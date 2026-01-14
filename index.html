@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<header class="app-header">
+  <div class="title-wrapper">
+    <img
+      src="assets/ttourvvalk.svg"
+      alt="TTourVValk logo"
+      class="app-logo"
+    />
+    <h1>TTourVValk</h1>
+  </div>
+
+  <p class="subtitle">
+    Walk slowly, notice the details, and build your own tour.
+  </p>
+</header>
+
+  <main class="app-container">
+    <!-- Map Section -->
+    <section id="map" class="map-container">
+      <!-- Map will be rendered here -->
+    </section>
+
+    <!-- Sidebar Section -->
+    <aside class="sidebar">
+      <!-- Landmark Form -->
+      <section class="landmark-form">
+        <h2>Add a Landmark</h2>
+
+        <form id="add-landmark-form">
+          <label>
+            Title
+            <input type="text" id="title" required />
+          </label>
+
+          <label>
+            Description
+            <textarea id="description" rows="3" required></textarea>
+          </label>
+
+          <label>
+            Image
+            <input type="file" id="image" accept="image/*" />
+          </label>
+
+          <div class="location-controls">
+            <button type="button" id="use-current-location">
+              Use Current Location
+            </button>
+          </div>
+
+          <button type="submit">Add Landmark</button>
+        </form>
+      </section>
+
+      <!-- Landmark List -->
+      <section class="landmark-list">
+        <h2>Your Landmarks</h2>
+        <ul id="landmark-items">
+          <!-- Landmarks will be added here dynamically -->
+        </ul>
+      </section>
+    </aside>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
