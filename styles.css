@@ -1,0 +1,220 @@
+/* TTourVValk styles
+   Keep layout simple, responsive, and easy to extend. */
+
+:root {
+  /* Basic spacing scale */
+  --gap-1: 0.5rem;
+  --gap-2: 1rem;
+  --gap-3: 1.5rem;
+
+  /* Borders and radius */
+  --border: 1px solid rgba(0, 0, 0, 0.12);
+  --radius: 12px;
+
+  /* Text */
+  --text-muted: #555;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.4;
+  color: #111;
+  background: #fff;
+}
+
+/* Header */
+.app-header {
+  padding: var(--gap-2);
+  border-bottom: var(--border);
+}
+
+.title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-1);
+}
+
+.app-logo {
+  /* Match the title scale without hardcoding px */
+  width: 5em;
+  height: 5em;
+  display: block;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.2px;
+}
+
+.subtitle {
+  margin: var(--gap-1) 0 0;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+/* Main layout */
+.app-container {
+  display: flex;
+  gap: var(--gap-2);
+  padding: var(--gap-2);
+  min-height: calc(100vh - 84px); /* header height buffer */
+}
+
+.map-container {
+  flex: 2;
+  min-height: 520px;
+  border: var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: #f6f6f6; /* placeholder until map loads */
+}
+
+.sidebar {
+  flex: 1;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-2);
+}
+
+/* Form */
+.landmark-form,
+.landmark-list {
+  border: var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap-2);
+  background: #fff;
+}
+
+.landmark-form h2,
+.landmark-list h2 {
+  margin: 0 0 var(--gap-1);
+  font-size: 1.1rem;
+}
+
+#add-landmark-form {
+  display: grid;
+  gap: var(--gap-1);
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.95rem;
+}
+
+input[type="text"],
+textarea,
+input[type="file"] {
+  width: 100%;
+  font: inherit;
+}
+
+input[type="text"],
+textarea {
+  padding: 0.6rem 0.7rem;
+  border: var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 3.2rem;
+}
+
+input[type="text"]:focus,
+textarea:focus {
+  border-color: rgba(0, 0, 0, 0.3);
+}
+
+.location-controls {
+  display: flex;
+  gap: var(--gap-1);
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+/* Buttons */
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 10px;
+  border: var(--border);
+  background: #fff;
+  padding: 0.55rem 0.8rem;
+}
+
+button:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+}
+
+button:active {
+  transform: translateY(1px);
+}
+
+button[type="submit"] {
+  margin-top: 0.25rem;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+/* List */
+#landmark-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: var(--gap-1);
+}
+
+#landmark-items li {
+  border: var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+}
+
+#landmark-items li:hover {
+  border-color: rgba(0, 0, 0, 0.22);
+}
+
+/* Responsive: stack on smaller screens */
+@media (max-width: 900px) {
+  .app-container {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .sidebar {
+    min-width: 0;
+  }
+
+  .map-container {
+    min-height: 380px;
+  }
+}
+
+/* Small screens: keep touch targets comfortable and avoid horizontal scroll */
+@media (max-width: 480px) {
+  .app-header {
+    padding: var(--gap-2) var(--gap-1);
+  }
+
+  .app-container {
+    padding: var(--gap-1);
+  }
+
+  button {
+    padding: 0.65rem 0.9rem;
+  }
+}
