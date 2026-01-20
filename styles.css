@@ -1,18 +1,22 @@
-/* TTourVValk styles
-   Keep layout simple, responsive, and easy to extend. */
+@font-face {
+  font-family: "BBH Bartle";
+  src: url("./assets/fonts/BBHBartle.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+}
 
 :root {
-  /* Basic spacing scale */
+  --navy-bg: #0f1e3a;
+  --navy-border: #1f2f57;
+  --navy-text: #122a57; /* button text navy */
+  --card-bg: #ffffff;
+  --text: #111111;
+  --muted: #333333;
+
   --gap-1: 0.5rem;
   --gap-2: 1rem;
-  --gap-3: 1.5rem;
 
-  /* Borders and radius */
-  --border: 1px solid rgba(0, 0, 0, 0.12);
   --radius: 12px;
-
-  /* Text */
-  --text-muted: #555;
 }
 
 * {
@@ -26,16 +30,17 @@ body {
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-  line-height: 1.4;
-  color: #111;
-  background: #fff;
+  font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--navy-bg);
 }
 
 /* Header */
 .app-header {
   padding: var(--gap-2);
-  border-bottom: var(--border);
+  background: var(--card-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
 
 .title-wrapper {
@@ -45,39 +50,58 @@ body {
 }
 
 .app-logo {
-  /* Match the title scale without hardcoding px */
-  width: 5em;
-  height: 5em;
+  width: 3.8em;
+  height: 3.8em;
+  object-fit: contain;
   display: block;
 }
 
 .app-header h1 {
+  font-family: "BBH Bartle", sans-serif;
+  font-size: 2.8rem;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
   margin: 0;
-  font-size: 1.8rem;
-  letter-spacing: 0.2px;
+  display: inline-block;
+  padding-bottom: 0.6rem;
+  background-image:
+    linear-gradient(#000, #000), 
+    linear-gradient(#000, #000); 
+  background-size:
+    100% 4px,   
+    100% 2px;   
+  background-position:
+    0 calc(100% - 4px), 
+    0 100%;             
+  background-repeat: no-repeat;
 }
 
+/* Subtitle: intentionally starts a bit to the right of the title */
 .subtitle {
-  margin: var(--gap-1) 0 0;
-  color: var(--text-muted);
-  font-size: 0.95rem;
+  margin: 0.2rem 0 0;
+  padding-left: 5rem; /* slightly more than the title start */
+  font-size: 1.05rem;
+  font-weight: 700; /* bold */
+  color: var(--muted);
 }
 
-/* Main layout */
+/* Layout */
 .app-container {
   display: flex;
   gap: var(--gap-2);
   padding: var(--gap-2);
-  min-height: calc(100vh - 84px); /* header height buffer */
+  min-height: calc(100vh - 96px);
+  background: var(--navy-bg);
 }
 
 .map-container {
   flex: 2;
   min-height: 520px;
-  border: var(--border);
+  background: var(--card-bg);
+  border: 1px solid var(--navy-border);
   border-radius: var(--radius);
   overflow: hidden;
-  background: #f6f6f6; /* placeholder until map loads */
 }
 
 .sidebar {
@@ -88,21 +112,37 @@ body {
   gap: var(--gap-2);
 }
 
-/* Form */
 .landmark-form,
 .landmark-list {
-  border: var(--border);
+  background: var(--card-bg);
+  border: 1px solid var(--navy-border);
   border-radius: var(--radius);
   padding: var(--gap-2);
-  background: #fff;
 }
 
+/* Section headers: use the older font feel (no italic), keep current size */
 .landmark-form h2,
 .landmark-list h2 {
-  margin: 0 0 var(--gap-1);
-  font-size: 1.1rem;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #111;
+  margin: 0 0 0.75rem;
+  position: relative;
 }
 
+.landmark-form h2::after,
+.landmark-list h2::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.25rem;
+  height: 3px;
+  background: #111;
+}
+
+/* Form */
 #add-landmark-form {
   display: grid;
   gap: var(--gap-1);
@@ -111,32 +151,29 @@ body {
 label {
   display: grid;
   gap: 0.35rem;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
-input[type="text"],
-textarea,
-input[type="file"] {
-  width: 100%;
-  font: inherit;
+label input,
+label textarea {
+  font-weight: 400;
 }
 
 input[type="text"],
 textarea {
+  width: 100%;
   padding: 0.6rem 0.7rem;
-  border: var(--border);
+  border: 2px solid #122a57;
   border-radius: 10px;
+  font: inherit;
   outline: none;
 }
 
 textarea {
   resize: vertical;
   min-height: 3.2rem;
-}
-
-input[type="text"]:focus,
-textarea:focus {
-  border-color: rgba(0, 0, 0, 0.3);
 }
 
 .location-controls {
@@ -151,22 +188,28 @@ button {
   font: inherit;
   cursor: pointer;
   border-radius: 10px;
-  border: var(--border);
   background: #fff;
-  padding: 0.55rem 0.8rem;
+  padding: 0.6rem 0.9rem;
 }
 
-button:hover {
-  border-color: rgba(0, 0, 0, 0.25);
-}
-
-button:active {
-  transform: translateY(1px);
-}
-
+#use-current-location,
 button[type="submit"] {
-  margin-top: 0.25rem;
-  border-color: rgba(0, 0, 0, 0.2);
+  border: 2px solid #122a57;
+  box-shadow: 0 4px 0 #122a57;
+  font-weight: 800;
+  color: var(--navy-text); /* button text navy */
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+#use-current-location:hover,
+button[type="submit"]:hover {
+  transform: translateY(-1px);
+}
+
+#use-current-location:active,
+button[type="submit"]:active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #111;
 }
 
 /* List */
@@ -179,16 +222,12 @@ button[type="submit"] {
 }
 
 #landmark-items li {
-  border: var(--border);
+  border: 1px solid var(--navy-border);
   border-radius: 10px;
   padding: 0.75rem;
 }
 
-#landmark-items li:hover {
-  border-color: rgba(0, 0, 0, 0.22);
-}
-
-/* Responsive: stack on smaller screens */
+/* Responsive */
 @media (max-width: 900px) {
   .app-container {
     flex-direction: column;
@@ -204,17 +243,12 @@ button[type="submit"] {
   }
 }
 
-/* Small screens: keep touch targets comfortable and avoid horizontal scroll */
 @media (max-width: 480px) {
   .app-header {
-    padding: var(--gap-2) var(--gap-1);
+    padding: 1rem 0.75rem;
   }
 
   .app-container {
-    padding: var(--gap-1);
-  }
-
-  button {
-    padding: 0.65rem 0.9rem;
+    padding: 0.75rem;
   }
 }
