@@ -4,11 +4,9 @@ let infoWindow;
 let selectedLatLng = null;
 let selectedPin = null;
 
-// All landmark data lives in memory only
 const landmarks = [];
 
 function initMap() {
-  // Default center (Toronto) used only as an initial fallback
   const defaultCenter = { lat: 43.6532, lng: -79.3832 };
 
   map = new google.maps.Map(document.getElementById("map"), {
@@ -18,7 +16,6 @@ function initMap() {
 
   infoWindow = new google.maps.InfoWindow();
 
-  // Pick coordinates by clicking the map
   map.addListener("click", (e) => {
     selectedLatLng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
     placeSelectedPin(selectedLatLng);
@@ -34,63 +31,44 @@ function initMap() {
 }
 
 function handleUseCurrentLocation() {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported.");
-    return;
-  }
+  if (!navigator.geolocation) return;
 
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      selectedLatLng = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude,
-      };
-      map.setCenter(selectedLatLng);
-      map.setZoom(15);
-      placeSelectedPin(selectedLatLng);
-    },
-    () => {
-      alert("Could not access location.");
-    }
-  );
+  navigator.geolocation.getCurrentPosition((pos) => {
+    selectedLatLng = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+    };
+    map.setCenter(selectedLatLng);
+    map.setZoom(15);
+    placeSelectedPin(selectedLatLng);
+  });
 }
 
 function placeSelectedPin(latLng) {
   if (selectedPin) selectedPin.setMap(null);
-
   selectedPin = new google.maps.Marker({
     map,
     position: latLng,
-    title: "Selected location",
   });
 }
 
 function handleAddLandmark(e) {
   e.preventDefault();
 
-  const title = document.getElementById("title").value.trim();
-  const description = document.getElementById("description").value.trim();
-  const fileInput = document.getElementById("image");
-  const file = fileInput.files[0];
+  const title = titleInput().value.trim();
+  const description = descInput().value.trim();
+  const file = imageInput().files[0];
 
-  if (!title || !description) {
-    alert("Please enter a title and description.");
+  if (!title || !description || !selectedLatLng) {
+    alert("Complete all fields and choose a location.");
     return;
   }
-
-  if (!selectedLatLng) {
-    alert("Pick a location first.");
-    return;
-  }
-
-  let imageUrl = null;
-  if (file) imageUrl = URL.createObjectURL(file);
 
   const landmark = {
     id: crypto.randomUUID(),
     title,
     description,
-    imageUrl,
+    imageUrl: file ? URL.createObjectURL(file) : null,
     lat: selectedLatLng.lat,
     lng: selectedLatLng.lng,
     marker: null,
@@ -99,6 +77,7 @@ function handleAddLandmark(e) {
   landmark.marker = createLandmarkMarker(landmark);
   landmarks.push(landmark);
 
+  renderLandmarkList();
   e.target.reset();
 }
 
@@ -110,26 +89,58 @@ function createLandmarkMarker(landmark) {
   });
 
   marker.addListener("click", () => {
-    const imgHtml = landmark.imageUrl
-      ? `<div style="margin-top:8px">
-           <img src="${landmark.imageUrl}" style="max-width:220px;border-radius:8px" />
-         </div>`
-      : "";
-
-    const content = `
-      <div style="max-width:260px">
-        <strong>${escapeHtml(landmark.title)}</strong>
-        <p>${escapeHtml(landmark.description)}</p>
-        ${imgHtml}
-      </div>
-    `;
-
-    infoWindow.close();
-    infoWindow.setContent(content);
-    infoWindow.open(map, marker);
+    openInfo(marker, landmark);
+    highlightListItem(landmark.id);
   });
 
   return marker;
+}
+
+function openInfo(marker, landmark) {
+  const content = `
+    <div>
+      <strong>${escapeHtml(landmark.title)}</strong>
+      <p>${escapeHtml(landmark.description)}</p>
+    </div>
+  `;
+  infoWindow.setContent(content);
+  infoWindow.open(map, marker);
+}
+
+function renderLandmarkList() {
+  const ul = document.getElementById("landmark-items");
+  ul.innerHTML = "";
+
+  landmarks.forEach((lm) => {
+    const li = document.createElement("li");
+    li.dataset.id = lm.id;
+    li.textContent = lm.title;
+
+    li.addEventListener("click", () => {
+      map.setCenter({ lat: lm.lat, lng: lm.lng });
+      map.setZoom(16);
+      openInfo(lm.marker, lm);
+      highlightListItem(lm.id);
+    });
+
+    ul.appendChild(li);
+  });
+}
+
+function highlightListItem(id) {
+  document.querySelectorAll("#landmark-items li").forEach((li) => {
+    li.style.outline = li.dataset.id === id ? "2px solid #122a57" : "none";
+  });
+}
+
+function titleInput() {
+  return document.getElementById("title");
+}
+function descInput() {
+  return document.getElementById("description");
+}
+function imageInput() {
+  return document.getElementById("image");
 }
 
 function escapeHtml(str) {
