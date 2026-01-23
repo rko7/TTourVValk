@@ -2,7 +2,10 @@ let map;
 let selectedLatLng = null;
 let selectedPin = null;
 
-//// Initial map center (Toronto) – user-selected location will override this
+const landmarks = [];
+
+// Initial map center (Toronto) – user-selected location will override this
+
 function initMap() {
   const defaultCenter = { lat: 43.6532, lng: -79.3832 };
 
@@ -19,6 +22,46 @@ function initMap() {
   document
     .getElementById("use-current-location")
     .addEventListener("click", handleUseCurrentLocation);
+
+  document
+    .getElementById("add-landmark-form")
+    .addEventListener("submit", handleAddLandmark);
+}
+
+function handleAddLandmark(e) {
+  e.preventDefault();
+
+  const title = document.getElementById("title").value.trim();
+  const description = document.getElementById("description").value.trim();
+  const fileInput = document.getElementById("image");
+  const file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+
+  if (!title || !description) {
+    alert("Please enter a title and description.");
+    return;
+  }
+
+  if (!selectedLatLng) {
+    alert("Pick a location (map click or current location).");
+    return;
+  }
+
+  // store image in memory (URL string), not uploaded
+  let imageUrl = null;
+  if (file) imageUrl = URL.createObjectURL(file);
+
+  const landmark = {
+    id: crypto.randomUUID(),
+    title,
+    description,
+    imageUrl,
+    lat: selectedLatLng.lat,
+    lng: selectedLatLng.lng,
+  };
+
+  landmarks.push(landmark);
+
+  e.target.reset();
 }
 
 function handleUseCurrentLocation() {
