@@ -5,7 +5,6 @@ let selectedPin = null;
 const landmarks = [];
 
 // Initial map center (Toronto) – user-selected location will override this
-
 function initMap() {
   const defaultCenter = { lat: 43.6532, lng: -79.3832 };
 
