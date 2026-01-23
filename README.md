@@ -1,10 +1,10 @@
-# TTourVValk
+# TTour-VValk
 
 TTourVValk is a front-end walking tour web application that lets users create their own walking routes by adding meaningful landmarks to a map.
 
 Instead of rushing from place to place, this app focuses on slow exploration — noticing small details, personal memories, and places that matter to you.
 
-## Why “TTourVValk”?
+## Why “TTour-VValk”?
 
 The name comes from the Korean word **뚜벅뚜벅 (ttu-beok ttu-beok)**, which describes the sound and feeling of walking steadily on foot.
 
@@ -20,12 +20,20 @@ TTourVValk combines that feeling with the idea of a walking tour — a personal 
 - Build your own walking tour based on places that matter to you
 
 ## Tech Stack
-- HTML
-- CSS
-- JavaScript
-- Map API (Google Maps or equivalent)
+- HTML / CSS / JavaScript
+- Google Maps JavaScript API
+
+## Run Locally
+This project is front-end only (no backend, no database).
+
+From the project folder:
+
+```bash
+python -m http.server
+```
+Then open:
+- http://localhost:8000/index.html
 
 ## Notes
-- Front-end only
-- No backend or database
-- Runs locally by opening `index.html`
+- All data is stored in memory while the page is open
+- Works locally in the browser
