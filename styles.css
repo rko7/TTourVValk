@@ -8,13 +8,13 @@
 :root {
   --navy-bg: #0f1e3a;
   --navy-border: #1f2f57;
-  --navy-text: #122a57; /* button text navy */
+  --navy-text: #122a57;
   --card-bg: #ffffff;
   --text: #111111;
   --muted: #333333;
 
-  --gap-1: 0.5rem;
-  --gap-2: 1rem;
+  --gap-1: 0.45rem;
+  --gap-2: 0.85rem;
 
   --radius: 12px;
 }
@@ -26,19 +26,28 @@
 html,
 body {
   height: 100%;
+  margin: 0;
+  overflow: hidden; /* block page scroll at the root */
 }
 
 body {
-  margin: 0;
   font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   line-height: 1.5;
   color: var(--text);
   background: var(--navy-bg);
+
+  /* Prefer dynamic viewport height when available (reduces phantom scroll). */
+  height: 100vh;
+  height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
 }
 
 /* Header */
 .app-header {
-  padding: var(--gap-2);
+  flex: 0 0 auto;
+  padding: 0.75rem var(--gap-2);
   background: var(--card-bg);
   border-bottom: 1px solid rgba(0, 0, 0, 0.12);
 }
@@ -50,66 +59,72 @@ body {
 }
 
 .app-logo {
-  width: 3.8em;
-  height: 3.8em;
+  width: 3.4em;
+  height: 3.4em;
   object-fit: contain;
   display: block;
 }
 
 .app-header h1 {
   font-family: "BBH Bartle", sans-serif;
-  font-size: 2.8rem;
+  font-size: 2.55rem;
   font-weight: 400;
   line-height: 1.1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.03em;
   margin: 0;
   display: inline-block;
-  padding-bottom: 0.6rem;
-  background-image:
-    linear-gradient(#000, #000), 
-    linear-gradient(#000, #000); 
-  background-size:
-    100% 4px,   
-    100% 2px;   
-  background-position:
-    0 calc(100% - 4px), 
-    0 100%;             
+  padding-bottom: 0.45rem;
+
+  background-image: linear-gradient(#000, #000), linear-gradient(#000, #000);
+  background-size: 100% 4px, 100% 2px;
+  background-position: 0 calc(100% - 4px), 0 100%;
   background-repeat: no-repeat;
 }
 
-/* Subtitle: intentionally starts a bit to the right of the title */
 .subtitle {
-  margin: 0.2rem 0 0;
-  padding-left: 5rem; /* slightly more than the title start */
-  font-size: 1.05rem;
-  font-weight: 700; /* bold */
+  margin: 0.15rem 0 0;
+  padding-left: 4.6rem;
+  font-size: 0.98rem;
+  font-weight: 700;
   color: var(--muted);
 }
 
-/* Layout */
+/* Main layout: fill remaining height, no page scroll */
 .app-container {
+  flex: 1 1 auto;
+  min-height: 0;      /* critical for nested flex sizing */
+  overflow: hidden;   /* keep scroll inside children only */
+
   display: flex;
   gap: var(--gap-2);
   padding: var(--gap-2);
-  min-height: calc(100vh - 96px);
   background: var(--navy-bg);
 }
 
+/* Map should shrink/grow without forcing page overflow */
 .map-container {
-  flex: 2;
-  min-height: 520px;
+  flex: 2 1 0;
+  min-width: 0;
+  min-height: 0;
+
   background: var(--card-bg);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
+/* Sidebar scrolls internally */
 .sidebar {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 320px;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
   gap: var(--gap-2);
+
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .landmark-form,
@@ -117,17 +132,16 @@ body {
   background: var(--card-bg);
   border: 1px solid var(--navy-border);
   border-radius: var(--radius);
-  padding: var(--gap-2);
+  padding: 0.8rem;
 }
 
-/* Section headers: use the older font feel (no italic), keep current size */
 .landmark-form h2,
 .landmark-list h2 {
   font-family: "Inter", system-ui, sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.45rem;
   font-weight: 800;
   color: #111;
-  margin: 0 0 0.75rem;
+  margin: 0 0 0.65rem;
   position: relative;
 }
 
@@ -151,7 +165,7 @@ body {
 label {
   display: grid;
   gap: 0.35rem;
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.01em;
 }
@@ -164,7 +178,7 @@ label textarea {
 input[type="text"],
 textarea {
   width: 100%;
-  padding: 0.6rem 0.7rem;
+  padding: 0.52rem 0.65rem;
   border: 2px solid #122a57;
   border-radius: 10px;
   font: inherit;
@@ -180,7 +194,7 @@ textarea {
   display: flex;
   gap: var(--gap-1);
   flex-wrap: wrap;
-  margin-top: 0.25rem;
+  margin-top: 0.2rem;
 }
 
 /* Buttons */
@@ -189,7 +203,7 @@ button {
   cursor: pointer;
   border-radius: 10px;
   background: #fff;
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.85rem;
 }
 
 #use-current-location,
@@ -197,7 +211,7 @@ button[type="submit"] {
   border: 2px solid #122a57;
   box-shadow: 0 4px 0 #122a57;
   font-weight: 800;
-  color: var(--navy-text); /* button text navy */
+  color: var(--navy-text);
   transition: transform 120ms ease, box-shadow 120ms ease;
 }
 
@@ -227,28 +241,27 @@ button[type="submit"]:active {
   padding: 0.75rem;
 }
 
-/* Responsive */
+/* Responsive: keep no page scroll, stack */
 @media (max-width: 900px) {
   .app-container {
     flex-direction: column;
-    min-height: auto;
   }
 
   .sidebar {
     min-width: 0;
   }
-
-  .map-container {
-    min-height: 380px;
-  }
 }
 
 @media (max-width: 480px) {
   .app-header {
-    padding: 1rem 0.75rem;
+    padding: 0.85rem 0.75rem;
   }
 
   .app-container {
     padding: 0.75rem;
+  }
+
+  .subtitle {
+    padding-left: 4.2rem;
   }
 }
