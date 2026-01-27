@@ -1,110 +1,241 @@
 let map;
 let infoWindow;
 
-let selectedLatLng = null;
-let selectedPin = null;
+let landmarks = []; // { id, title, description, imageDataUrl, position:{lat,lng}, marker, isVisible }
+let selectedId = null;
 
-const landmarks = [];
+let pendingPosition = null;
+let pendingMarker = null;
+
+const DEFAULT_CENTER = { lat: 43.6532, lng: -79.3832 }; // start in Toronto
 
 function initMap() {
-  const defaultCenter = { lat: 43.6532, lng: -79.3832 };
-
   map = new google.maps.Map(document.getElementById("map"), {
-    center: defaultCenter,
-    zoom: 13,
+    center: DEFAULT_CENTER,
+    zoom: 12,
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: false,
   });
 
   infoWindow = new google.maps.InfoWindow();
 
   map.addListener("click", (e) => {
-    selectedLatLng = { lat: e.latLng.lat(), lng: e.latLng.lng() };
-    placeSelectedPin(selectedLatLng);
+    setPendingPosition({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+    setFormMessage("Location selected.", "ok");
   });
 
-  document
-    .getElementById("use-current-location")
-    .addEventListener("click", handleUseCurrentLocation);
-
-  document
-    .getElementById("add-landmark-form")
-    .addEventListener("submit", handleAddLandmark);
+  wireUpForm();
+  renderLandmarkList();
 }
 
-function handleUseCurrentLocation() {
-  if (!navigator.geolocation) return;
+function wireUpForm() {
+  const form = document.getElementById("add-landmark-form");
+  const useCurrentBtn = document.getElementById("use-current-location");
 
-  navigator.geolocation.getCurrentPosition((pos) => {
-    selectedLatLng = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-    };
-    map.setCenter(selectedLatLng);
-    map.setZoom(15);
-    placeSelectedPin(selectedLatLng);
-  });
-}
+  // primary buttons style
+  if (useCurrentBtn) useCurrentBtn.classList.add("btn-primary");
 
-function placeSelectedPin(latLng) {
-  if (selectedPin) selectedPin.setMap(null);
-  selectedPin = new google.maps.Marker({
-    map,
-    position: latLng,
-  });
-}
+  // Create/attach coords button (keep existing if already present)
+  let coordsBtn = document.getElementById("enter-coords");
+  if (!coordsBtn) {
+    const locationControls = document.querySelector(".location-controls");
+    coordsBtn = document.createElement("button");
+    coordsBtn.type = "button";
+    coordsBtn.id = "enter-coords";
+    locationControls.appendChild(coordsBtn);
+  }
+  coordsBtn.type = "button";
+  coordsBtn.textContent = "Set Coordinates";
+  coordsBtn.classList.add("btn-primary");
 
-function handleAddLandmark(e) {
-  e.preventDefault();
+  // Submit button
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) submitBtn.classList.add("btn-primary");
 
-  const title = titleInput().value.trim();
-  const description = descInput().value.trim();
-  const file = imageInput().files[0];
-
-  if (!title || !description || !selectedLatLng) {
-    alert("Complete all fields and choose a location.");
-    return;
+  // Custom file name display
+  const imgEl = document.getElementById("image");
+  const fileNameEl = document.getElementById("file-name");
+  if (imgEl && fileNameEl) {
+    imgEl.addEventListener("change", () => {
+      const file = imgEl.files && imgEl.files[0];
+      fileNameEl.textContent = file ? file.name : "No file chosen";
+    });
   }
 
-  const landmark = {
-    id: crypto.randomUUID(),
-    title,
-    description,
-    imageUrl: file ? URL.createObjectURL(file) : null,
-    lat: selectedLatLng.lat,
-    lng: selectedLatLng.lng,
-    marker: null,
-  };
+  // Use current location
+  if (useCurrentBtn) {
+    useCurrentBtn.addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        setFormMessage("Geolocation is not supported in this browser.", "error");
+        return;
+      }
 
-  landmark.marker = createLandmarkMarker(landmark);
-  landmarks.push(landmark);
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const p = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          setPendingPosition(p);
+          map.panTo(p);
+          map.setZoom(15);
+          setFormMessage("Using your current location.", "ok");
+        },
+        () => setFormMessage("Unable to get your current location.", "error"),
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
+  }
 
-  renderLandmarkList();
-  e.target.reset();
+  // Set coordinates
+  coordsBtn.addEventListener("click", () => {
+    const latStr = prompt("Latitude?");
+    const lngStr = prompt("Longitude?");
+    const lat = Number(latStr);
+    const lng = Number(lngStr);
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+      setFormMessage("Please enter valid numbers for latitude and longitude.", "error");
+      return;
+    }
+
+    const p = { lat, lng };
+    setPendingPosition(p);
+    map.panTo(p);
+    map.setZoom(15);
+    setFormMessage("Coordinates set.", "ok");
+  });
+
+  // Submit
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const titleEl = document.getElementById("title");
+    const descEl = document.getElementById("description");
+
+    const title = titleEl.value.trim();
+    const description = descEl.value.trim();
+    const file = imgEl.files && imgEl.files[0];
+
+    if (!title) {
+      setFormMessage("Please enter a title.", "error");
+      titleEl.focus();
+      return;
+    }
+    if (!description) {
+      setFormMessage("Please enter a short description.", "error");
+      descEl.focus();
+      return;
+    }
+    if (!pendingPosition) {
+      setFormMessage("Pick a location (map click, current location, or set coordinates).", "error");
+      return;
+    }
+    if (!file) {
+      setFormMessage("Please choose an image.", "error");
+      imgEl.focus();
+      return;
+    }
+
+    const imageDataUrl = await fileToDataUrl(file);
+
+    const landmark = createLandmark({
+      title,
+      description,
+      imageDataUrl,
+      position: pendingPosition,
+    });
+
+    landmarks.push(landmark);
+
+    pendingPosition = null;
+    clearPendingMarker();
+
+    form.reset();
+    if (fileNameEl) fileNameEl.textContent = "No file chosen";
+
+    setFormMessage("Landmark added.", "ok");
+    renderLandmarkList();
+  });
 }
 
-function createLandmarkMarker(landmark) {
+function setFormMessage(text, kind) {
+  const el = document.getElementById("form-message");
+  if (!el) return;
+
+  el.textContent = text || "";
+  el.classList.remove("is-error", "is-ok");
+
+  if (kind === "error") el.classList.add("is-error");
+  if (kind === "ok") el.classList.add("is-ok");
+}
+
+function setPendingPosition(position) {
+  pendingPosition = position;
+
+  if (!pendingMarker) {
+    pendingMarker = new google.maps.Marker({
+      position,
+      map,
+      clickable: false,
+      title: "Selected location",
+    });
+  } else {
+    pendingMarker.setPosition(position);
+    pendingMarker.setMap(map);
+  }
+}
+
+function clearPendingMarker() {
+  if (pendingMarker) pendingMarker.setMap(null);
+}
+
+function createLandmark({ title, description, imageDataUrl, position }) {
+  const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
+
   const marker = new google.maps.Marker({
+    position,
     map,
-    position: { lat: landmark.lat, lng: landmark.lng },
-    title: landmark.title,
+    title: title || "Landmark",
   });
 
   marker.addListener("click", () => {
-    openInfo(marker, landmark);
-    highlightListItem(landmark.id);
+    selectedId = id;
+    showInfoWindowFor(id);
+    renderLandmarkList();
+    scrollListItemIntoView(id);
   });
 
-  return marker;
+  return {
+    id,
+    title,
+    description,
+    imageDataUrl,
+    position,
+    marker,
+    isVisible: true,
+  };
 }
 
-function openInfo(marker, landmark) {
+function showInfoWindowFor(id) {
+  const lm = landmarks.find((x) => x.id === id);
+  if (!lm) return;
+
+  const safeTitle = escapeHtml(lm.title || "");
+  const safeDesc = escapeHtml(lm.description || "");
+
+  const imgHtml = lm.imageDataUrl
+    ? `<div style="margin-top:8px;"><img src="${lm.imageDataUrl}" alt="${safeTitle}" style="max-width:220px;max-height:160px;border-radius:8px;display:block;" /></div>`
+    : "";
+
   const content = `
-    <div>
-      <strong>${escapeHtml(landmark.title)}</strong>
-      <p>${escapeHtml(landmark.description)}</p>
+    <div style="max-width:260px;">
+      <div style="font-weight:800;">${safeTitle}</div>
+      <div style="margin-top:6px;">${safeDesc}</div>
+      ${imgHtml}
     </div>
   `;
+
   infoWindow.setContent(content);
-  infoWindow.open(map, marker);
+  infoWindow.open({ anchor: lm.marker, map });
 }
 
 function renderLandmarkList() {
@@ -114,45 +245,57 @@ function renderLandmarkList() {
   landmarks.forEach((lm) => {
     const li = document.createElement("li");
     li.dataset.id = lm.id;
-    li.textContent = lm.title;
 
-    li.addEventListener("click", () => {
-      map.setCenter({ lat: lm.lat, lng: lm.lng });
-      map.setZoom(16);
-      openInfo(lm.marker, lm);
-      highlightListItem(lm.id);
-    });
+    const title = document.createElement("div");
+    title.textContent = lm.title || "(Untitled)";
+    title.style.fontWeight = "800";
+
+    const desc = document.createElement("div");
+    desc.textContent = lm.description || "";
+    desc.style.marginTop = "6px";
+
+    li.appendChild(title);
+    li.appendChild(desc);
+
+    if (lm.imageDataUrl) {
+      const img = document.createElement("img");
+      img.src = lm.imageDataUrl;
+      img.alt = lm.title || "Landmark photo";
+      img.style.marginTop = "10px";
+      img.style.width = "100%";
+      img.style.maxHeight = "160px";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "10px";
+      li.appendChild(img);
+    }
+
+    if (lm.id === selectedId) {
+      li.classList.add("is-selected");
+    }
 
     ul.appendChild(li);
   });
 }
 
-function highlightListItem(id) {
-  document.querySelectorAll("#landmark-items li").forEach((li) => {
-    li.style.outline = li.dataset.id === id ? "2px solid #122a57" : "none";
+function scrollListItemIntoView(id) {
+  const el = document.querySelector(`#landmark-items li[data-id="${id}"]`);
+  if (el) el.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
 }
 
-function titleInput() {
-  return document.getElementById("title");
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
-function descInput() {
-  return document.getElementById("description");
-}
-function imageInput() {
-  return document.getElementById("image");
-}
-
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, (c) => {
-    return {
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
-    }[c];
-  });
-}
-
-window.initMap = initMap;
