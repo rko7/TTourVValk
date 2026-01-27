@@ -17,6 +17,10 @@
   --gap-2: 0.85rem;
 
   --radius: 12px;
+
+  /* Buttons */
+  --btn-h: 44px;
+  --btn-shadow: 4px;
 }
 
 * {
@@ -27,7 +31,7 @@ html,
 body {
   height: 100%;
   margin: 0;
-  overflow: hidden; /* block page scroll at the root */
+  overflow: hidden;
 }
 
 body {
@@ -36,7 +40,6 @@ body {
   color: var(--text);
   background: var(--navy-bg);
 
-  /* Prefer dynamic viewport height when available (reduces phantom scroll). */
   height: 100vh;
   height: 100dvh;
 
@@ -89,11 +92,11 @@ body {
   color: var(--muted);
 }
 
-/* Main layout: fill remaining height, no page scroll */
+/* Main layout */
 .app-container {
   flex: 1 1 auto;
-  min-height: 0;      /* critical for nested flex sizing */
-  overflow: hidden;   /* keep scroll inside children only */
+  min-height: 0;
+  overflow: hidden;
 
   display: flex;
   gap: var(--gap-2);
@@ -101,7 +104,7 @@ body {
   background: var(--navy-bg);
 }
 
-/* Map should shrink/grow without forcing page overflow */
+/* Map */
 .map-container {
   flex: 2 1 0;
   min-width: 0;
@@ -113,7 +116,7 @@ body {
   overflow: hidden;
 }
 
-/* Sidebar scrolls internally */
+/* Sidebar */
 .sidebar {
   flex: 1 1 0;
   min-width: 320px;
@@ -190,6 +193,7 @@ textarea {
   min-height: 3.2rem;
 }
 
+/* Location buttons row */
 .location-controls {
   display: flex;
   gap: var(--gap-1);
@@ -197,33 +201,109 @@ textarea {
   margin-top: 0.2rem;
 }
 
-/* Buttons */
+.location-controls button {
+  flex: 1 1 0;
+  min-width: 160px;
+}
+
+/* Base buttons */
 button {
   font: inherit;
   cursor: pointer;
   border-radius: 10px;
   background: #fff;
   padding: 0.55rem 0.85rem;
+  border: 2px solid transparent;
 }
 
-#use-current-location,
-button[type="submit"] {
+/* Unified primary button */
+.btn-primary {
+  height: var(--btn-h);
+  padding: 0 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+
   border: 2px solid #122a57;
-  box-shadow: 0 4px 0 #122a57;
+  box-shadow: 0 var(--btn-shadow) 0 #122a57;
+  border-radius: 10px;
   font-weight: 800;
   color: var(--navy-text);
+  background: #fff;
   transition: transform 120ms ease, box-shadow 120ms ease;
+  will-change: transform;
 }
 
-#use-current-location:hover,
-button[type="submit"]:hover {
+.btn-primary:hover {
   transform: translateY(-1px);
 }
 
-#use-current-location:active,
-button[type="submit"]:active {
+.btn-primary:active {
   transform: translateY(2px);
   box-shadow: 0 2px 0 #111;
+}
+
+/* Submit full width */
+#add-landmark-form button[type="submit"] {
+  width: 100%;
+}
+
+/* Form message */
+.form-message {
+  min-height: 1.25rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.form-message.is-error {
+  color: #b00020;
+}
+
+.form-message.is-ok {
+  color: #1b5e20;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+/* Visually hide the real input but keep it accessible */
+.file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* The label is the button */
+.file-btn {
+  user-select: none;
+}
+
+/* Show focus on the visible button when the hidden input is focused */
+.file-input:focus + .file-btn,
+.file-input:focus-visible + .file-btn {
+  outline: 3px solid rgba(18, 42, 87, 0.25);
+  outline-offset: 3px;
+}
+
+/* Filename text aligned to button height */
+.file-name {
+  display: inline-flex;
+  align-items: center;
+  height: var(--btn-h);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 /* List */
@@ -241,7 +321,7 @@ button[type="submit"]:active {
   padding: 0.75rem;
 }
 
-/* Responsive: keep no page scroll, stack */
+/* Responsive */
 @media (max-width: 900px) {
   .app-container {
     flex-direction: column;
