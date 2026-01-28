@@ -188,6 +188,28 @@ function clearPendingMarker() {
   if (pendingMarker) pendingMarker.setMap(null);
 }
 
+/* Delete a landmark (and its marker) by id */
+function deleteLandmarkById(id) {
+  const idx = landmarks.findIndex((x) => x.id === id);
+  if (idx === -1) return;
+
+  const lm = landmarks[idx];
+
+  // Remove marker from map
+  if (lm.marker) lm.marker.setMap(null);
+
+  // If the infoWindow is currently anchored to this marker, close it (safe even if not open)
+  if (infoWindow) infoWindow.close();
+
+  // Remove from array
+  landmarks.splice(idx, 1);
+
+  // Clear selection if we deleted the selected one
+  if (selectedId === id) selectedId = null;
+
+  renderLandmarkList();
+}
+
 function createLandmark({ title, description, imageDataUrl, position }) {
   const id = crypto.randomUUID ? crypto.randomUUID() : String(Date.now() + Math.random());
 
@@ -226,16 +248,35 @@ function showInfoWindowFor(id) {
     ? `<div style="margin-top:8px;"><img src="${lm.imageDataUrl}" alt="${safeTitle}" style="max-width:220px;max-height:160px;border-radius:8px;display:block;" /></div>`
     : "";
 
+  // Add a delete button inside InfoWindow
   const content = `
     <div style="max-width:260px;">
       <div style="font-weight:800;">${safeTitle}</div>
       <div style="margin-top:6px;">${safeDesc}</div>
       ${imgHtml}
+      <div style="margin-top:10px;">
+        <button type="button" data-action="delete" data-id="${lm.id}"
+          style="border:2px solid #122a57; box-shadow:0 4px 0 #122a57; border-radius:10px; background:#fff; padding:8px 12px; font-weight:800; color:#122a57; cursor:pointer;">
+          Delete
+        </button>
+      </div>
     </div>
   `;
 
   infoWindow.setContent(content);
   infoWindow.open({ anchor: lm.marker, map });
+
+  // Wire delete button after the InfoWindow DOM is ready
+  google.maps.event.addListenerOnce(infoWindow, "domready", () => {
+    const btn = document.querySelector('button[data-action="delete"][data-id="' + lm.id + '"]');
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const ok = confirm("Delete this landmark?");
+      if (!ok) return;
+      deleteLandmarkById(lm.id);
+    });
+  });
 }
 
 function renderLandmarkList() {
@@ -245,6 +286,14 @@ function renderLandmarkList() {
   landmarks.forEach((lm) => {
     const li = document.createElement("li");
     li.dataset.id = lm.id;
+
+    // Click list item -> select + open InfoWindow
+    li.addEventListener("click", () => {
+      selectedId = lm.id;
+      showInfoWindowFor(lm.id);
+      renderLandmarkList();
+      scrollListItemIntoView(lm.id);
+    });
 
     const title = document.createElement("div");
     title.textContent = lm.title || "(Untitled)";
@@ -268,6 +317,28 @@ function renderLandmarkList() {
       img.style.borderRadius = "10px";
       li.appendChild(img);
     }
+
+    // Add a delete button in the list item (right-aligned)
+    const actions = document.createElement("div");
+    actions.style.marginTop = "10px";
+    actions.style.display = "flex";
+    actions.style.justifyContent = "flex-end";
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.textContent = "Delete";
+    delBtn.classList.add("btn-primary");
+
+    // Prevent list click from firing when deleting
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const ok = confirm("Delete this landmark?");
+      if (!ok) return;
+      deleteLandmarkById(lm.id);
+    });
+
+    actions.appendChild(delBtn);
+    li.appendChild(actions);
 
     if (lm.id === selectedId) {
       li.classList.add("is-selected");
