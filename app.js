@@ -36,6 +36,17 @@ function wireUpForm() {
   // primary buttons style
   if (useCurrentBtn) useCurrentBtn.classList.add("btn-primary");
 
+  // Clear message when user edits inputs
+  const titleEl = document.getElementById("title");
+  const descEl = document.getElementById("description");
+
+  function clearMsgOnInput() {
+    setFormMessage("", null);
+  }
+
+  if (titleEl) titleEl.addEventListener("input", clearMsgOnInput);
+  if (descEl) descEl.addEventListener("input", clearMsgOnInput);
+
   // Create/attach coords button (keep existing if already present)
   let coordsBtn = document.getElementById("enter-coords");
   if (!coordsBtn) {
@@ -56,6 +67,10 @@ function wireUpForm() {
   // Custom file name display
   const imgEl = document.getElementById("image");
   const fileNameEl = document.getElementById("file-name");
+
+  // Clear message when image changes
+  if (imgEl) imgEl.addEventListener("change", clearMsgOnInput);
+
   if (imgEl && fileNameEl) {
     imgEl.addEventListener("change", () => {
       const file = imgEl.files && imgEl.files[0];
@@ -108,9 +123,6 @@ function wireUpForm() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const titleEl = document.getElementById("title");
-    const descEl = document.getElementById("description");
-
     const title = titleEl.value.trim();
     const description = descEl.value.trim();
     const file = imgEl.files && imgEl.files[0];
@@ -153,6 +165,10 @@ function wireUpForm() {
     if (fileNameEl) fileNameEl.textContent = "No file chosen";
 
     setFormMessage("Landmark added.", "ok");
+
+    // Auto-clear success message after a short delay
+    setTimeout(() => setFormMessage("", null), 2000);
+
     renderLandmarkList();
   });
 }
@@ -164,6 +180,7 @@ function setFormMessage(text, kind) {
   el.textContent = text || "";
   el.classList.remove("is-error", "is-ok");
 
+  // Apply state class only when needed
   if (kind === "error") el.classList.add("is-error");
   if (kind === "ok") el.classList.add("is-ok");
 }
@@ -192,7 +209,6 @@ function clearPendingMarker() {
 function deleteLandmarkById(id) {
   const idx = landmarks.findIndex((x) => x.id === id);
   if (idx === -1) return;
-
   const lm = landmarks[idx];
 
   // Remove marker from map
@@ -206,7 +222,7 @@ function deleteLandmarkById(id) {
 
   // Clear selection if we deleted the selected one
   if (selectedId === id) selectedId = null;
-    renderLandmarkList();
+  renderLandmarkList();
 }
 
 /* Toggle marker visibility without deleting data */
@@ -237,6 +253,9 @@ function createLandmark({ title, description, imageDataUrl, position }) {
   });
 
   marker.addListener("click", () => {
+    const lm = landmarks.find((x) => x.id === id);
+    if (lm && !lm.isVisible) return; // Skip when hidden
+
     selectedId = id;
     showInfoWindowFor(id);
     renderLandmarkList();
