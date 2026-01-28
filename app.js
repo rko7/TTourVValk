@@ -206,6 +206,23 @@ function deleteLandmarkById(id) {
 
   // Clear selection if we deleted the selected one
   if (selectedId === id) selectedId = null;
+    renderLandmarkList();
+}
+
+/* Toggle marker visibility without deleting data */
+function toggleLandmarkVisibility(id) {
+  const lm = landmarks.find((x) => x.id === id);
+  if (!lm) return;
+  lm.isVisible = !lm.isVisible;
+
+  // Show/hide marker on the map
+  if (lm.marker) lm.marker.setMap(lm.isVisible ? map : null);
+
+  // If we hide the selected landmark, clear selection and close InfoWindow
+  if (!lm.isVisible && selectedId === id) {
+    selectedId = null;
+    if (infoWindow) infoWindow.close();
+  }
 
   renderLandmarkList();
 }
@@ -287,13 +304,18 @@ function renderLandmarkList() {
     const li = document.createElement("li");
     li.dataset.id = lm.id;
 
-    // Click list item -> select + open InfoWindow
+    // Visual state for hidden items
+    if (!lm.isVisible) li.classList.add("is-hidden");
+
+    // Click list item -> select + open InfoWindow (only if visible)
     li.addEventListener("click", () => {
-      selectedId = lm.id;
-      showInfoWindowFor(lm.id);
-      renderLandmarkList();
-      scrollListItemIntoView(lm.id);
-    });
+      if (!lm.isVisible) return; // Do nothing when hidden
+
+        selectedId = lm.id;
+        showInfoWindowFor(lm.id);
+        renderLandmarkList();
+        scrollListItemIntoView(lm.id);
+      });
 
     const title = document.createElement("div");
     title.textContent = lm.title || "(Untitled)";
@@ -318,12 +340,26 @@ function renderLandmarkList() {
       li.appendChild(img);
     }
 
-    // Add a delete button in the list item (right-aligned)
+    // Actions row: Hide/Show + Delete
     const actions = document.createElement("div");
     actions.style.marginTop = "10px";
     actions.style.display = "flex";
     actions.style.justifyContent = "flex-end";
+    actions.style.gap = "8px";
 
+    // Hide/Show button
+    const toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.textContent = lm.isVisible ? "Hide" : "Show";
+    toggleBtn.classList.add("btn-primary");
+
+    // Prevent list click from firing
+    toggleBtn.addEventListener("click", (e) => {    
+      e.stopPropagation();    
+      toggleLandmarkVisibility(lm.id);
+    });
+
+    // Delete button
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.textContent = "Delete";
@@ -337,6 +373,7 @@ function renderLandmarkList() {
       deleteLandmarkById(lm.id);
     });
 
+    actions.appendChild(toggleBtn);
     actions.appendChild(delBtn);
     li.appendChild(actions);
 

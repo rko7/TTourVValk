@@ -411,3 +411,13 @@ button {
     padding-left: 4.2rem;
   }
 }
+
+/* Hidden landmark state */
+#landmark-items li.is-hidden {
+opacity: 0.55;
+filter: grayscale(1);
+}
+
+#landmark-items li.is-hidden:hover {
+transform: none; /* keep it stable when hidden */
+}
