@@ -7,6 +7,8 @@ let selectedId = null;
 let pendingPosition = null;
 let pendingMarker = null;
 
+let messageTimerId = null; // tracks auto-clear timer
+
 const DEFAULT_CENTER = { lat: 43.6532, lng: -79.3832 }; // start in Toronto
 
 function initMap() {
@@ -42,6 +44,17 @@ function wireUpForm() {
 
   function clearMsgOnInput() {
     setFormMessage("", null);
+  }
+
+  const clearLocBtn = document.getElementById("clear-location");
+  if (clearLocBtn) clearLocBtn.classList.add("btn-primary");
+
+  if (clearLocBtn) {
+    clearLocBtn.addEventListener("click", () => {
+      pendingPosition = null;
+      clearPendingMarker();
+      setFormMessage("", null);
+    });
   }
 
   if (titleEl) titleEl.addEventListener("input", clearMsgOnInput);
@@ -167,7 +180,8 @@ function wireUpForm() {
     setFormMessage("Landmark added.", "ok");
 
     // Auto-clear success message after a short delay
-    setTimeout(() => setFormMessage("", null), 2000);
+    if (messageTimerId) clearTimeout(messageTimerId);
+    messageTimerId = setTimeout(() => setFormMessage("", null), 2000);
 
     renderLandmarkList();
   });
@@ -329,11 +343,11 @@ function renderLandmarkList() {
     // Click list item -> select + open InfoWindow (only if visible)
     li.addEventListener("click", () => {
       if (!lm.isVisible) return; // Do nothing when hidden
-
-        selectedId = lm.id;
-        showInfoWindowFor(lm.id);
-        renderLandmarkList();
-        scrollListItemIntoView(lm.id);
+      
+      selectedId = lm.id;
+      showInfoWindowFor(lm.id);
+      renderLandmarkList();
+      scrollListItemIntoView(lm.id);
       });
 
     const title = document.createElement("div");

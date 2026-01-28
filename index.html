@@ -28,12 +28,9 @@
     </header>
 
     <main class="app-container">
-      <!-- Map Section -->
       <section id="map" class="map-container"></section>
 
-      <!-- Sidebar Section -->
       <aside class="sidebar">
-        <!-- Landmark Form -->
         <section class="landmark-form">
           <h2>Add a Landmark</h2>
 
@@ -55,22 +52,27 @@
                 <label for="image" class="btn-primary file-btn" id="file-trigger">
                   Choose File
                 </label>
-
                 <span class="file-name" id="file-name">No file chosen</span>
               </div>
             </label>
 
             <div class="location-controls">
-              <button type="button" id="use-current-location">Use Current Location</button>
+              <button type="button" id="use-current-location" class="btn-primary">
+                Use Current Location
+              </button>
+              <button type="button" id="clear-location" class="btn-primary">
+                Remove Mark
+              </button>
             </div>
 
-            <div id="form-message" class="form-message" aria-live="polite"></div>
+            <p id="form-message" class="form-message" aria-live="polite"></p>
 
-            <button type="submit">Add Landmark</button>
+            <div class="form-divider" aria-hidden="true"></div>
+
+            <button type="submit" class="btn-primary">Add Landmark</button>
           </form>
         </section>
 
-        <!-- Landmark List -->
         <section class="landmark-list">
           <h2>Your Landmarks</h2>
           <ul id="landmark-items"></ul>
