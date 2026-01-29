@@ -14,26 +14,49 @@ It reflects the idea of moving at your own pace, paying attention to your surrou
 TTourVValk combines that feeling with the idea of a walking tour — a personal journey shaped by where you choose to stop.
 
 ## What You Can Do
-- Add landmarks with a title, short description, and image
-- Assign a location to each landmark on a map
-- View landmarks as map markers and explore their details
-- Build your own walking tour based on places that matter to you
+
+### Create Landmarks
+- Add landmarks with a **title**, **short description**, and **image upload**
+- Assign a landmark location by:
+  - Clicking directly on the map
+  - Using your **current location** (browser Geolocation)
+  - Entering **latitude/longitude manually** (Set Coordinates)
+
+### Explore and Manage Landmarks
+- See all landmarks as **markers on the map**
+- Click a marker to view details in a Google Maps **InfoWindow**
+- View landmarks in the **sidebar list** and click an item to open its InfoWindow
+- **Hide/Show** landmarks without deleting them (marker is removed/added back on the map)
+- **Delete** landmarks (from list and from the map)
+- Confirmation prompt appears before deleting
+
+### UI / UX Improvements
+- Inline validation messages (success/error) with clear feedback
+- Selected landmark is visually highlighted in the list
+- File upload displays the selected file name
+- Responsive layout for smaller screens (map stays visible)
 
 ## Tech Stack
 - HTML / CSS / JavaScript
 - Google Maps JavaScript API
 
-## Run Locally
+## Run Locally (No Backend)
+
 This project is front-end only (no backend, no database).
 
-From the project folder:
+- Open `index.html` in your browser.
+- Google Maps API key is required to run this project. Please insert your own key.
 
-```bash
-python -m http.server
-```
-Then open:
-- http://localhost:8000/index.html
+### Notes
+- Landmarks are stored in memory only while the page is open (no LocalStorage).
+- Refreshing the page resets landmarks.
+- Geolocation requires browser permission.
 
-## Notes
-- All data is stored in memory while the page is open
-- Works locally in the browser
+### Project Requirements Coverage (Quick Checklist)
+- Google Map loads and is interactive
+- Add landmark with title + description + image
+- Landmark location set via map click / current location / manual coordinates
+- Markers display on map and show InfoWindow details
+- Landmark list updates dynamically and stays in sync with markers
+- Delete and Hide/Show supported with UI controls
+- Responsive layout supported
