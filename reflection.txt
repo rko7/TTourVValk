@@ -1,0 +1,16 @@
+### Reflection
+
+For this assignment, my main focus was to make sure all required features worked correctly when the application was run locally by opening index.html. 
+I tried to keep the implementation simple, stable, and easy to test instead of adding unnecessary complexity.
+One of the main challenges was working with the Google Maps JavaScript API. 
+Understanding how API keys, browser security, and local file execution interact took more time than I expected. 
+Through testing, I learned that API key restrictions and local execution methods can directly affect whether the map loads properly, which helped me better understand how third-party APIs behave in real development environments.
+Layout and styling were also more difficult than I initially thought. 
+I originally wanted to build a more complex three-level layout, but the spacing and proportions did not work well, and small CSS changes often caused unexpected layout issues. 
+Because of this, I chose to simplify the layout and focus on clarity and usability, which made the interface more stable and predictable.
+While testing the map interactions, I realized that deleting and managing markers could be improved. 
+The assignment required only deleting landmarks, but during testing I felt that having direct control over map markers would make the application easier to use. 
+Based on this, I added a separate marker removal feature, so markers could be managed more flexibly during a session without reloading the page.
+Due to time constraints from other coursework, co-op work, and job applications, I focused on completing all required functionality and ensuring the application behaved correctly. 
+If I had more time, I would further refine the layout and improve data persistence. 
+Overall, this project helped me better understand front-end state management, UI debugging, and practical issues that arise when working with third-party APIs.
